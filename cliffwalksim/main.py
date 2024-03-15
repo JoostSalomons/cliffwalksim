@@ -8,6 +8,7 @@ def env_interaction(env_str: str, agent_type: str, time_steps: int = 1000) -> No
     obs, info = env.reset()
     agent = AgentFactory.create_agent(agent_type, env=env)
 
+
     for _ in range(time_steps):
         old_obs = obs
         action = agent.policy(obs)
@@ -22,6 +23,25 @@ def env_interaction(env_str: str, agent_type: str, time_steps: int = 1000) -> No
 
     env.close()
 
+def sarsa_interaction(env_str: str, agent_type: str, time_steps: int = 1000) -> None:
+    env = gym.make(env_str, render_mode='human')
+    obs, info = env.reset()
+    agent = AgentFactory.create_agent(agent_type, env=env)
+    action = agent.policy(obs)
+    for _ in range(time_steps):
+        old_obs = obs
+        obs, reward, terminated, truncated, info = env.step(action)
+        next_action = agent.policy(obs)
+        agent.update((old_obs, action, reward, obs, next_action))
+        action = next_action
+        if terminated or truncated:
+            # Episode ended.
+            obs, info = env.reset()
+            break
+
+    env.close()
+
 
 if __name__ == "__main__":
-    env_interaction("CliffWalking-v0", 'RANDOM', 20)
+    # env_interaction("CliffWalking-v0", 'RANDOM', 20)
+    sarsa_interaction("CliffWalking-v0", 'SARSA', 500)
